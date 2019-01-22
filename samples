@@ -1,0 +1,10 @@
+var x = [ 
+    ['Language', 'Speakers (in millions)'],
+    ['German',  5.85],
+    ['French',  1.66],
+    ['Italian', 0.316],
+    
+  	['Armenian', 6]
+];
+
+return x;
