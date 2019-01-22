@@ -1,0 +1,4 @@
+var mobilePush = require('mobile-push');
+var applicationId = "demoAppId";
+
+return mobilePush.createGroup('group3', 'android', 'hi');

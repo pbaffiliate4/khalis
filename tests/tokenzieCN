@@ -1,0 +1,12 @@
+var DN = "CN=Test+SerialNumber=123, C=AE, OU=UAE PASS, O=UAE Government"
+var topFields = DN.split(/\, ?/);
+var values = {}
+for(fieldIndex in topFields){
+	field = topFields[fieldIndex];
+  var subFields = field.split("+");
+  for(subFieldIndex in subFields){
+    var tokenized = subFields[subFieldIndex].split("=");
+    values[tokenized[0].toUpperCase()] = tokenized[1];
+  }
+} 
+return values;

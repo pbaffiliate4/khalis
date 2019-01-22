@@ -1,0 +1,65 @@
+var csrPEM = "-----BEGIN CERTIFICATE REQUEST-----\nMIICfzCCAWcCAQAwHDEaMAsGA1UEAxMEVGVzdDALBgNVBAoTBFRlc3QwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDwhjsFhhJ9TzExVuyiX+J/+oqk0CYe\nIo9BbNNXbAFau4zwR1Dxa9WJNtG1u9id0/T/PZbW/LAqb5+GZpEdEAC3OYWmkB78\nBAQuuvlMB5VTVPx2ziVkCkrn1imBe2MDCZAmhksptpif+jypHgOOqGp4vtaBY9Ny\nyHS4Qek6O2wre5o4W6DkUHrk0g1z/+q0qL522WUwjLhM0N/t1F1bT07YmrZBnxLn\nCMAaGMxP2jtYQqvje6xOLASP/ItOnziboqwSP7/BaCB9kJooIL5P/jt1n/ZByzZz\nqn7XFKnxlU/mYAAru7xX4nc/puIzXLZ6SHZTw62ZeIAT+0n0Jd4iDI4HAgMBAAGg\nHjAcBgkqhkiG9w0BCQ4xDzANMAsGA1UdDwQEAwIGwDANBgkqhkiG9w0BAQsFAAOC\nAQEAgEOYpnzPCZ+GoFlFGz2hM94X/I9QkLzXTVIhBf5qDhVQIFwnf9TawwuGmUJJ\nS6SKKx1rRO5VHNZ7rge/4IMhVPP8hSHXkgL2ey0WeFF2IZx5+fud1IAHHiSr53ND\nKf+D64FTpA37rV6IpNzvAXn1bWjgqlSiezk4QVJeiK2WL+4gzEG1rU3CROod4wPv\nNFq54TCZVBAb7c0bFMDk4sddoTKo73tiN+2Th3A80qlReRnJReJIWxRmgm9K7sWt\n5y+FI11CvLXq0WLzz8ywnx/7rhZbAmolIpDMrq5O3iZ/c/poLcN9ORNh7GglmsN5\nkiHzE1WhUC/QBf1cvZeofktaPg==\n-----END CERTIFICATE REQUEST-----"
+
+var SN = dm.extractInfoFromCSR(csrPEM)
+return SN
+
+var xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.protocol.core.ejbca.org/"><soapenv:Header/><soapenv:Body><ws:certificateRequest> <!--arg0 is userData. We need to specify at least the subjectDN and profile.The rest of mandatory attributes may possibly have a fixed value?--> <arg0> <caName>DM Demo Generic Issuing CA</caName> <clearPwd>FALSE</clearPwd> <certificateProfileName>DMDemoGenericIssuingCA: Authentication (DigitalID)</certificateProfileName> <endEntityProfileName>DMDemoGenericIssuingCA: Authentication (DigitalID)</endEntityProfileName> <endTime>2018-02-15 05:00:00+00:00</endTime> <keyRecoverable>FALSE</keyRecoverable> <sendNotification>FALSE</sendNotification> <status>10</status> <subjectDN>CN=Person\'s Name, C=AE, serialNumber=12345, givenName=Jackson, surname=Michael</subjectDN> <tokenType>USERGENERATED</tokenType> <username>test1</username> </arg0><!--arg1 is requestData. In our case it will be a SubjectPublicKeyInfo structure--> <arg1>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyE0pf/5tOR69TDr4OR67gjploYC/69QMLusTfy+0uVhy7jg7p4g6ZORgxBvUo4kPQLL0YpEG5jD2yKkk4etnZv2Mlk0SnFpcm4Eyd0F1Dpfgz3kCrr03I7oP7d9qSGS2WjahRzzJ985AsgjiyPBRz/e7KmtzrL2ZlbJhGDFFQFQQAi2YEaDsT/6cZ2PNyABNZgUWFQ0LK2kzAAGuT8lpHlzyDaDV6slQbVpQg3lvSM25w9XEIv8hsckm2v4JuHcq/1p6ldojIj0NDqVQLdDWBylG1pKzsB9uspDfHy8mn7kLND4yOdY1QUtJ6Cm9enrfUNFv9pEgFyg8FZJCSTlWSQIDAQAB</arg1><!--arg2 is requestType. In our case, CERT_REQ_TYPE_PUBLICKEY, which is 3--><arg2>3</arg2> <!--arg3 is hardTokenSN. Omitted in our case --><!--arg4 is responseType. In our case, RESPONSETYPE_CERTIFICATE, which is "CERTIFICATE"--><arg4>CERTIFICATE</arg4> </ws:certificateRequest></soapenv:Body></soapenv:Envelope>'
+
+var certificate = dm.curl("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml, null, "dmca.pem", "dmca.key");
+return certificate;
+
+
+var certificate = "-----BEGIN CERTIFICATE-----\nMIIEizCCA3OgAwIBAgIIbxHmPaMVZiEwDQYJKoZIhvcNAQELBQAwRTELMAkGA1UE\nBhMCQUUxETAPBgNVBAoMCFRlc3REZW1vMSMwIQYDVQQDDBpETSBEZW1vIEdlbmVy\naWMgSXNzdWluZyBDQTAeFw0xODAyMTUwNTAwMDBaFw0xODEyMDcxMjUyNDRaMFkx\nCzAJBgNVBAYTAkFFMRAwDgYDVQQEDAdNaWNoYWVsMRAwDgYDVQQqDAdKYWNrc29u\nMQ4wDAYDVQQFEwUxMjM0NTEWMBQGA1UEAwwNUGVyc29uJ3MgTmFtZTCCASIwDQYJ\nKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMhNKX/+bTkevUw6+Dkeu4I6ZaGAv+vU\nDC7rE38vtLlYcu44O6eIOmTkYMQb1KOJD0Cy9GKRBuYw9sipJOHrZ2b9jJZNEpxa\nXJuBMndBdQ6X4M95Aq69NyO6D+3fakhktlo2oUc8yffOQLII4sjwUc/3uyprc6y9\nmZWyYRgxRUBUEAItmBGg7E/+nGdjzcgATWYFFhUNCytpMwABrk/JaR5c8g2g1erJ\nUG1aUIN5b0jNucPVxCL/IbHJJtr+Cbh3Kv9aepXaIyI9DQ6lUC3Q1gcpRtaSs7Af\nbrKQ3x8vJp+5CzQ+MjnWNUFLSegpvXp631DRb/aRIBcoPBWSQkk5VkkCAwEAAaOC\nAWkwggFlMF4GCCsGAQUFBwEBBFIwUDAuBggrBgEFBQcwAoYiaHR0cDovL2NhY2Vy\ndHMudXJsLmFlL2lzc3VlckNBLmNydDAeBggrBgEFBQcwAYYSaHR0cDovL29jc3Au\ndXJsLmFlMB0GA1UdDgQWBBQ8t6xQY3C3NifFdTtbkDXh9XMU2jAMBgNVHRMBAf8E\nAjAAMB8GA1UdIwQYMBaAFO5nKAJUIaoCDUpivYkrgEUKNdNVMEMGA1UdIAQ8MDow\nOAYLYIYQAQEHIwICAgEwKTAnBggrBgEFBQcCARYbaHR0cHM6Ly9sb2NhdGlvbi51\ncmwuYWUvQ1BTMEsGA1UdHwREMEIwH6AdoBuGGWh0dHA6Ly9jcmwxLnVybC5hZS9t\neS5jcmwwH6AdoBuGGWh0dHA6Ly9jcmwyLnVybC5hZS9teS5jcmwwDgYDVR0PAQH/\nBAQDAgeAMBMGA1UdJQQMMAoGCCsGAQUFBwMCMA0GCSqGSIb3DQEBCwUAA4IBAQBc\nnFmHxdqCOoIBU6d7DLx8YIfNUZOawb4JT4mHISt+XOjkq2WJlj7C95SNzo+rvIaY\niTCMgutgM91CuZwaNezN1X2uQWHOeg7UwaA/U+ephMiiwCHYEGcoGK4ySMMkJTwL\nemgeeVCneqnczeNah1OdVh11BQsdxuxmTtl54mnjUH4Sq2JtpPBNWH0E91Irkvoi\n4OPe2FKgr4gTenl89nR/sw4gVyuXu1g3J3l9Qdj0pcWtrDhDc2K1rriHQQEaeNbW\ng2M17ptaXFJNsnxFujkWnrpFrYvH15PNocOuk/Q8dq2Dtwz4Z2/IqMexQ1xF0tz2\nDf3+hZ3oqHiq8zUPvIUI\n-----END CERTIFICATE-----"
+		    var serialNumber = dm.extractSerialNumberFromCertificate(certificate)
+		    
+		    
+			var csrPEM = "-----BEGIN CERTIFICATE REQUEST-----\n"
+        + "MIICxDCCAawCAQAwfzELMAkGA1UEBhMCVVMxETAPBgNVBAgMCElsbGlub2lzMRAw\n"
+        + "DgYDVQQHDAdDaGljYWdvMQ4wDAYDVQQKDAVDb2RhbDELMAkGA1UECwwCTkExDjAM\n"
+        + "BgNVBAMMBUNvZGFsMR4wHAYJKoZIhvcNAQkBFg9rYmF4aUBjb2RhbC5jb20wggEi\n"
+        + "MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDSrEF27VvbGi5x7LnPk4hRigAW\n"
+        + "1feGeKOmRpHd4j/kUcJZLh59NHJHg5FMF7u9YdZgnMdULawFVezJMLSJYJcCAdRR\n"
+        + "hSN+skrQlB6f5wgdkbl6ZfNaMZn5NO1Ve76JppP4gl0rXHs2UkRJeb8lguOpJv9c\n"
+        + "tw+Sn6B13j8jF/m/OhIYI8fWhpBYvDXukgADTloCjOIsAvRonkIpWS4d014deKEe\n"
+        + "5rhYX67m3H7GtZ/KVtBKhg44ntvuT2fR/wB1FlDws+0gp4edlkDlDml1HXsf4FeC\n"
+        + "ogijo6+C9ewC2anpqp9o0CSXM6BT2I0h41PcQPZ4EtAc4ctKSlzTwaH0H9MbAgMB\n"
+        + "AAGgADANBgkqhkiG9w0BAQsFAAOCAQEAqfQbrxc6AtjymI3TjN2upSFJS57FqPSe\n"
+        + "h1YqvtC8pThm7MeufQmK9Zd+Lk2qnW1RyBxpvWe647bv5HiQaOkGZH+oYNxs1XvM\n"
+        + "y5huq+uFPT5StbxsAC9YPtvD28bTH7iXR1b/02AK2rEYT8a9/tCBCcTfaxMh5+fr\n"
+        + "maJtj+YPHisjxKW55cqGbotI19cuwRogJBf+ZVE/4hJ5w/xzvfdKjNxTcNr1EyBE\n"
+        + "8ueJil2Utd1EnVrWbmHQqnlAznLzC5CKCr1WfmnrDw0GjGg1U6YpjKBTc4MDBQ0T\n"
+        + "56ZL2yaton18kgeoWQVgcbK4MXp1kySvdWq0Bc3pmeWSM9lr/ZNwNQ==\n"
+        + "-----END CERTIFICATE REQUEST-----\n";
+        var SN = dm.extractInfoFromCSR(csrPEM)
+var xml = '<?xml version="1.0" encoding="UTF-8" standalone="no"?><ValidationGatewayResponse xmlns="http://www.emiratesid.ae/vg"><Message xml:id="message"><Header><Service>CheckCardStatus</Service><Action>CheckCardStatus</Action><RequestID>9KbnV1DE0ioDgbsP3wp2WnQHzLST7SbsRwcTDV3TUYpNWUKslXEWTw==</RequestID><Nonce>oDPPsyptGxSoVzvSKV1H39oznzv9Y7EfT2AbvTD8xwOsmvaHMGoVcw==</Nonce><CorrelationID>e23b46c2-061a-498d-ba0b-f82eaf00d851</CorrelationID><CardSerialNumber>15 80 00 00 0E 4B 06 75</CardSerialNumber><CardNumber>000019746</CardNumber><IDNumber>784198842105482</IDNumber><Timestamp>2018-12-04T10:25:40.704+04:00</Timestamp><ValidityInterval>180</ValidityInterval></Header><Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="CardStatusDataType"><ResponseStatus>Success</ResponseStatus><CardStatus>CardValid</CardStatus></Body></Message><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315#WithComments"/><SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/><Reference URI="#message"><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><DigestValue>Q5Np42NA4ZGmHjWUc9jspSW61OeCVtLw4gdUe6p1ezA=</DigestValue></Reference></SignedInfo><SignatureValue>jka38+7LDOVKRSoj2GvZCj+Q33N1p1NoXwirkWq+R/8eZM/iWKbAZLUEGt9jJBsKYimVjRmd7oDf\
+zJcP/I4k6NaQ/9UAl9swNCeqOOM3er4utRk6Ww2txQ53/w5v1r6IuYF9aOV/86AuyywI8+0nx31e\
+iKIrj9ASR8AXa0fKPYLh48WaacwZXbyHr39LfpTrY23TdaRHPEZUK917YIDzv5Yzs14dPQUK23An\
+u98txaLT/9pFsC+kbmIjualhFEjaOAhxlmzS59gJQSR5Q5tUd97Mj1dWC81RP+3K7I+axHrmSfiM\
+owq15yOAEa2DqX0m7Y85Zodem4wkTX5c6ME8nA==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDKjCCApOgAwIBAgIQC/Y1+sMtXDPsP1QWpyLNzDANBgkqhkiG9w0BAQsFADBmMRwwGgYDVQQD\
+DBNFbWlyYXRlcyBJRCBTZXJ2ZXJzMQ4wDAYDVQQLDAVQUklEQzEdMBsGA1UECgwUTWluaXN0cnkg\
+b2YgSW50ZXJpb3IxCzAJBgNVBAYTAkFFMQowCAYDVQQEDAE1MB4XDTE3MDQyMzExNDQ1MloXDTIw\
+MDQyMzExNDQ1MlowaDEjMCEGA1UEAwwaVmFsaWRhdGlvbiBHYXRld2F5IFNlcnZpY2UxDjAMBgNV\
+BAsMBVBSSURDMSQwIgYDVQQKDBtFbWlyYXRlcyBJZGVudGl0eSBBdXRob3JpdHkxCzAJBgNVBAYT\
+AkFFMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx0s7lc4q2v9X5Qfl8280MfVsOMK/\
+54ilQGF1hs9U3eTH6niSC6ZanCZRYJtqiUeTWy4duezhXYcP+dkfhNXxwHtjhje+N4/gduVJNllS\
+0HUs8sv6rfq8RgVxiVVpxYfW/npCeZPbrD0G+6ZUQlYLAutLwTF9SvPZ7AeWjl16ss2VxreQQeKH\
+4TRf4EWQI5FuVmqlFiz5SBQkDWYqlVT2Sbfjjov/9Hc3zvOqVshwKRHbKQnDwZ7WoZC134FmbBDr\
+6x3RcT35+a/2JfdfbYcf7iPsEyu4vx0M68bSwpWY24ehqY/pRSUrU8kFHAIcuHFRYbJzplFEpxVt\
+uoQGpsFZkwIDAQABo1MwUTALBgNVHQ8EBAMCBsAwHgYDVR0OAQH/BBQEEnRlbXBvcmFyeVB1Ymxp\
+Y0tleTAiBgNVHSMBAf8EGDAWgBR8vk//6r+DJJ0k0T2MIaHynsb0gzANBgkqhkiG9w0BAQsFAAOB\
+gQCWAz4RYdRlvwm0ykD0e9FQXWb14BulNXXxK1PSUc5YIjVAFBQb4qxsEVYISZ0TaYuboQxXF0RD\
+KEMjfkYz+Bn2Az9tdWyKOyZ9F2SnET9o+elGCBuNm+Y/U6heFOetSunFdGQB4TJ5m35SGPPC4H5D\
+zFHRaRBis38HbbCqXaWBYw==</X509Certificate></X509Data></KeyInfo></Signature></ValidationGatewayResponse>';
+var xmlValidation = dm.validateXml(xml)        
+
+
+var xml = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.protocol.core.ejbca.org/"><soapenv:Header/><soapenv:Body><ws:certificateRequest> <!--arg0 is userData. We need to specify at least the subjectDN and profile.The rest of mandatory attributes may possibly have a fixed value?--> <arg0> <caName>DM Demo Generic Issuing CA</caName> <clearPwd>FALSE</clearPwd> <certificateProfileName>DMDemoGenericIssuingCA: Authentication (DigitalID)</certificateProfileName> <endEntityProfileName>DMDemoGenericIssuingCA: Authentication (DigitalID)</endEntityProfileName> <endTime>2018-02-15 05:00:00+00:00</endTime> <keyRecoverable>FALSE</keyRecoverable> <sendNotification>FALSE</sendNotification> <status>10</status> <subjectDN>CN=Person\'s Name, C=AE, serialNumber=12345, givenName=Jackson, surname=Michael</subjectDN> <tokenType>USERGENERATED</tokenType> <username>test1</username> </arg0><!--arg1 is requestData. In our case it will be a SubjectPublicKeyInfo structure--> <arg1>MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyE0pf/5tOR69TDr4OR67gjploYC/69QMLusTfy+0uVhy7jg7p4g6ZORgxBvUo4kPQLL0YpEG5jD2yKkk4etnZv2Mlk0SnFpcm4Eyd0F1Dpfgz3kCrr03I7oP7d9qSGS2WjahRzzJ985AsgjiyPBRz/e7KmtzrL2ZlbJhGDFFQFQQAi2YEaDsT/6cZ2PNyABNZgUWFQ0LK2kzAAGuT8lpHlzyDaDV6slQbVpQg3lvSM25w9XEIv8hsckm2v4JuHcq/1p6ldojIj0NDqVQLdDWBylG1pKzsB9uspDfHy8mn7kLND4yOdY1QUtJ6Cm9enrfUNFv9pEgFyg8FZJCSTlWSQIDAQAB</arg1><!--arg2 is requestType. In our case, CERT_REQ_TYPE_PUBLICKEY, which is 3--><arg2>3</arg2> <!--arg3 is hardTokenSN. Omitted in our case --><!--arg4 is responseType. In our case, RESPONSETYPE_CERTIFICATE, which is "CERTIFICATE"--><arg4>CERTIFICATE</arg4> </ws:certificateRequest></soapenv:Body></soapenv:Envelope>'
+
+var certificate = dm.issueCertificate("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml);
+
+return {
+  SN : SN,
+  serialNumber: serialNumber,
+  xmlValidation: xmlValidation, 
+  certificate: certificate
+}        

@@ -1,0 +1,332 @@
+var constants = require("constants");
+var document = require("document");
+
+function getAllowedCertificateType(){
+  return [constants.AUTHENTICATION_CERTIFICATE, constants.QUALIFIED_SIGNATURE_CERTIFICATE, constants.ADVANCED_SIGNATURE_CERTIFICATE];
+ 
+}
+
+function parseBiometricService(b64){
+  
+  var xml = null;
+  try{
+  	xml = apsdb.atob(b64);  
+  }catch(e){
+    returnInvalidRequest("Invalid Biometric Parameter: Biometric vg response couldn't base64 decoded", 4018);
+    return;
+  }
+  
+  
+  log.info("decoded xml bio" + JSON.stringify(xml))
+  
+	var json = xmlToJson(xml);
+  log.info(JSON.stringify(json))
+  if(json == null){
+  	returnInvalidRequest("Invalid Biometric Parameter: Biometric vg response isn't a valid xml", 4019);
+    return;
+	}
+
+  try{
+    var cardSerialNumber 	= getMandatoryJsonValue(json, ["Message", "Header", "CardSerialNumber"]);
+    var cardNumber 				= getMandatoryJsonValue(json, ["Message", "Header", "CardNumber"]);
+    var idNumber 					= getMandatoryJsonValue(json, ["Message", "Header", "IDNumber"]);
+    var timeStamp 				= getMandatoryJsonValue(json, ["Message", "Header", "Timestamp"]);
+    var validityInterval 	= getMandatoryJsonValue(json, ["Message", "Header", "ValidityInterval"]);
+    var service 					= getMandatoryJsonValue(json, ["Message", "Header", "Service"]);
+    var matchStatus 			= getMandatoryJsonValue(json, ["Message", "Body", "MatchStatus"]);
+    var digestValue 			= getMandatoryJsonValue(json, ["Signature", "SignedInfo", "Reference", "DigestValue"]);
+    var signatureValue 		= getMandatoryJsonValue(json, ["Signature", "SignatureValue"]);
+    var x509Certificate 	= getMandatoryJsonValue(json, ["Signature", "KeyInfo", "X509Data", "X509Certificate"]);
+ 
+    if(validDate(timeStamp, validityInterval)){
+      if(validMatchStatus(service, matchStatus)){
+        //validate DigestValue and validate SignatureValue by validating xml
+        var xmlValidation = dm.validateXml(xml);
+        
+       	if(xmlValidation){
+           var biometricObject = {
+            cardSerialNumber: cardSerialNumber,
+            cardNumber: cardNumber,
+            idNumber: idNumber
+          }
+
+          return biometricObject;
+        }else{
+           returnInvalidRequest("Invalid Biometric response: Xml validation failed", 4020);
+        }
+      }else{
+         returnInvalidRequest("Invalid Biometric response: Match Status", 4021);
+      }
+    }else{
+       returnInvalidRequest("Invalid Biometric response: Date is not valid", 4022);
+    }
+  }catch(e){
+    returnInvalidRequest("Invalid Biometric response: failed to calculate Signature (" + e  + ")", 4023);
+  }
+}
+
+function parseCheckCardService(b64){
+  var xml = apsdb.atob(b64);
+  if(xml == null){
+  	returnInvalidRequest("Invalid Check Card Parameter: failed to base64 decode", 4024);
+    return;
+	}
+	var json = xmlToJson(xml);
+  
+  if(json == null){
+  	returnInvalidRequest("Invalid Check Card Parameter: failed to parse xml", 4025);
+    return;
+	}
+
+  try{
+    var cardSerialNumber 	= getMandatoryJsonValue(json, ["Message", "Header", "CardSerialNumber"]);
+    var cardNumber 				= getMandatoryJsonValue(json, ["Message", "Header", "CardNumber"]);
+    var idNumber 					= getMandatoryJsonValue(json, ["Message", "Header", "IDNumber"]);
+    var timeStamp 				= getMandatoryJsonValue(json, ["Message", "Header", "Timestamp"]);
+    var validityInterval 	= getMandatoryJsonValue(json, ["Message", "Header", "ValidityInterval"]);
+    var service 					= getMandatoryJsonValue(json, ["Message", "Header", "Service"]);
+    var cardStatus 				= getMandatoryJsonValue(json, ["Message", "Body", "CardStatus"]);
+    var digestValue 			= getMandatoryJsonValue(json, ["Signature", "SignedInfo", "Reference", "DigestValue"]);
+    var signatureValue 		= getMandatoryJsonValue(json, ["Signature", "SignatureValue"]);
+    var x509Certificate 	= getMandatoryJsonValue(json, ["Signature", "KeyInfo", "X509Data", "X509Certificate"]);
+ 
+    if(validDate(timeStamp, validityInterval)){
+      if(validCardStatus(service, cardStatus)){
+        //validate DigestValue and validate SignatureValue by validating xml
+        var xmlValidation = dm.validateXml(xml);
+        
+        if(xmlValidation){
+        	var checkCardObject = {
+            cardSerialNumber: cardSerialNumber,
+            cardNumber: cardNumber,
+            idNumber: idNumber
+          }
+
+          return checkCardObject;
+				}else{
+           returnInvalidRequest("Invalid Check Card response: Xml validation failed", 4026);
+        }
+      }else{
+         returnInvalidRequest("Invalid Check Card response: Card Status", 4029);
+      }
+    }else{
+       returnInvalidRequest("Invalid Check Card response: Date is not valid", 4027);
+    }
+  }catch(e){
+    returnInvalidRequest("Invalid Check Card response: failed to calculate Signature (" + e  + ")", 4028);
+  }
+}
+
+function tokenizeCN(subjectNameFromCsr){
+ var topFields = subjectNameFromCsr.split(/\, ?/);
+	var values = {}
+  for(fieldIndex in topFields){
+    field = topFields[fieldIndex];
+    var subFields = field.split("+");
+    for(subFieldIndex in subFields){
+      var tokenized = subFields[subFieldIndex].split("=");
+      values[tokenized[0].toUpperCase().replace(/\\$/, "")] = tokenized[1].replace(/\\$/, "");//ugly fix
+    }
+  } 
+  
+  return values;
+}
+
+function buildSubjectDN(values){
+  return "CN="+values["CN"]+ (values["SERIALNUMBER"] != null && values["SERIALNUMBER"] != "" ? "+SerialNumber="+values["SERIALNUMBER"] : "") +", C=AE, OU=UAE PASS, O=UAE Government";
+}
+
+function validateRevokeXML(xml){
+ 	var json = xmlToJson(xml);
+ 	var faultString = getJsonValue(json, ["soap:Body", "soap:Fault", "faultstring"]);
+  var result = {}; 
+  
+  if(faultString != null){
+    result.status = "failure";
+    result.msg = faultString;
+    result.errorCode = 4034
+  }else{
+    result.status = "success";
+    result.msg = "Certificate successfully revoked";
+  }
+  
+  return result;
+}
+
+function getMandatoryJsonValue(jsonObject, keys){
+  var val = getJsonValue(jsonObject, keys);
+  if (val == null) throw 'missing value for ' + keys;
+  
+  return val;
+}
+
+function getJsonValue(jsonObject, keys){
+  var object = jsonObject;
+  
+  for(var i in keys){
+    object = object[keys[i]];
+    if(!object){
+    	return null;
+    }
+	}
+  
+  return object;
+}
+
+function valid(param) {
+  return param != null && param != '';
+}
+
+function validDate(timeStamp, validityInterval){
+  var oldDate = new Date(timeStamp);
+  var currentDate = new Date();
+  
+	return true;//compareDatesInSeconds(oldDate, currentDate) <= validityInterval;
+}
+
+function validMatchStatus(service, matchStatus){
+  return service == constants.AUTHENTICATE_BIOMETRIC_ON_SERVER && (matchStatus == constants.BIOMETRICAUTHENTICATED);
+  //return service == constants.AUTHENTICATE_BIOMETRIC_ON_SERVER && (matchStatus == "LowScoreMatch" || matchStatus == constants.BIOMETRICAUTHENTICATED);
+}
+
+function validCardStatus(service, cardStatus){
+  return service == constants.CHECK_CARD_STATUS && cardStatus == constants.CARD_VALID;
+}
+
+function validateEmail(email) {
+  var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+}
+
+function compareValues(value1, value2){
+	return value1 == value2;  
+}
+
+function compareDatesInSeconds(date1, date2) {
+  // Convert both dates to milliseconds
+  var date1_ms = date1.getTime();
+  var date2_ms = date2.getTime();
+
+  // Calculate the difference in milliseconds
+  var difference_ms = date2_ms - date1_ms;
+    
+  // Convert back to seconds and return
+  return Math.round(difference_ms/1000); 
+}
+
+function validDocument(doc){
+	return doc && doc.metadata && doc.metadata.status == "success";
+}
+
+function validReason(pr){
+  var allowedReasons = [];
+  allowedReasons.push(constants.UNSPECIFIED);
+  allowedReasons.push(constants.KEY_COMPROMISE);
+  allowedReasons.push(constants.CA_COMPROMISE);
+  allowedReasons.push(constants.AFFILIATION_CHANGED);
+  allowedReasons.push(constants.SUPERSEDED);
+  allowedReasons.push(constants.CESSATION_OF_OPERATION);
+  allowedReasons.push(constants.PRIVILEGE_WITH_DRAWN);
+  allowedReasons.push(constants.AA_COMPROMISE);
+                      
+	return allowedReasons.indexOf(pr) >= 0
+}
+
+function validIssuerSN(picn){
+ 	var allowedIssuerSN = [];
+  allowedIssuerSN.push(constants.caConf[constants.AUTHENTICATION_CERTIFICATE].caName);
+  allowedIssuerSN.push(constants.caConf[constants.QUALIFIED_SIGNATURE_CERTIFICATE].caName);
+  allowedIssuerSN.push(constants.caConf[constants.ADVANCED_SIGNATURE_CERTIFICATE].caName);
+  
+  for(var i=0;i<allowedIssuerSN.length;i++){
+		if(picn.indexOf(allowedIssuerSN[i]) >= 0){
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+function getKeyfromIssuerSN(picn){
+  var listOfAllowedOfCertificates = getListOfAllowedCertificate();
+  
+  for(var i=0;i<listOfAllowedOfCertificates.length;i++){
+		if(picn.indexOf(listOfAllowedOfCertificates[i].caName) >= 0){
+      return listOfAllowedOfCertificates[i].key;
+    }
+  }
+  
+  return null;
+}
+
+function getCertfromIssuerSN(picn){
+	var listOfAllowedOfCertificates = getListOfAllowedCertificate();
+  
+  for(var i=0;i<listOfAllowedOfCertificates.length;i++){
+		if(picn.indexOf(listOfAllowedOfCertificates[i].caName) >= 0){
+      return listOfAllowedOfCertificates[i].cert;
+    }
+  }
+  
+  return null;
+}
+
+function getCafromIssuerSN(picn){
+	var listOfAllowedOfCertificates = getListOfAllowedCertificate();
+  
+  for(var i=0;i<listOfAllowedOfCertificates.length;i++){
+		if(picn.indexOf(listOfAllowedOfCertificates[i].caName) >= 0){
+      return listOfAllowedOfCertificates[i].ca;
+    }
+  }
+  
+  return null;
+}
+
+function getListOfAllowedCertificate(){
+  var allowedListOfCertificates = [];
+  allowedListOfCertificates.push(constants.caConf[constants.AUTHENTICATION_CERTIFICATE]);
+  allowedListOfCertificates.push(constants.caConf[constants.QUALIFIED_SIGNATURE_CERTIFICATE]);
+  allowedListOfCertificates.push(constants.caConf[constants.ADVANCED_SIGNATURE_CERTIFICATE]);
+  
+  return allowedListOfCertificates;
+}
+
+function validDBResults(subjectNameKey){
+  var results = document.query({"query":'subjectNameKey = "' + subjectNameKey + '"', "fields":'*'});
+      
+  log.info(JSON.stringify(results));
+  
+  if(results == null || results.result == null || results.result.documents == null || results.result.documents.length == 0){
+    return false;
+  }else{
+  	for(var i=0; i< results.result.documents.length;i++){
+      var doc = results.result.documents[i];
+      if(doc["biometricValue"] && doc["cardResponse"])
+        return doc;
+    }
+
+    return false;
+  }
+}
+
+function returnResult(result){
+  response.setStatus(200);
+  response.write(JSON.stringify(result));
+  response.addHeaders(configuration.crossDomainHeaders);
+  response.close();
+  return;
+}
+
+function returnInvalidRequest(msg, errorCode){ 
+  response.setStatus(400);
+  var responseMetadata = {
+        "status": "failure",
+    		"errorCode": errorCode,
+       	"errorDetails": msg
+  }
+  response.write(JSON.stringify(responseMetadata));
+  response.addHeaders(configuration.crossDomainHeaders);
+  response.close();
+  return;
+}

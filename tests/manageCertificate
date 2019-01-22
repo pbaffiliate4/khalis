@@ -1,0 +1,80 @@
+const AUTHENTICATION_CERTIFICATE = "authenticationCertificate";
+const QUALIFIED_SIGNATURE_CERTIFICATE = "qualifiedSignatureCertificate";
+const ADVANCED_SIGNATURE_CERTIFICATE = "advancedSignatureCertificate";
+const AUTHENTICATE_BIOMETRIC_ON_SERVER = "AuthenticateBiometricOnServer";
+const BIOMETRICAUTHENTICATED = "BiometricAuthenticated";
+const CHECK_CARD_STATUS = "CheckCardStatus";
+const CARD_VALID = "CardValid";
+const TYPES = [AUTHENTICATION_CERTIFICATE, QUALIFIED_SIGNATURE_CERTIFICATE, ADVANCED_SIGNATURE_CERTIFICATE];
+var caConf = {}
+caConf[AUTHENTICATION_CERTIFICATE] = {
+    certificateProfileName: "DMDemoGenericIssuingCA: Authentication (DigitalID)",//"ICAMobileCAG3: Authentication",
+    endEntityProfileName: "DMDemoGenericIssuingCA: Authentication (DigitalID)",//"ICAMobileCAG3: Authentication",
+    caName: "DM Demo Generic Issuing CA"//"ICA PP Mobile CA G3"
+  };
+caConf[QUALIFIED_SIGNATURE_CERTIFICATE] = {
+    certificateProfileName: "DMDemoGenericIssuingCA: Authentication (DigitalID)",//"ICAQualifiedCAG4: QualifiedDocSigning",
+    endEntityProfileName: "DMDemoGenericIssuingCA: Authentication (DigitalID)",//"ICAQualifiedCAG4: QualifiedDocSigning",
+    caName: "DM Demo Generic Issuing CA"//ICA PP Qualified CA G4"
+  };
+caConf[ADVANCED_SIGNATURE_CERTIFICATE] = {
+    certificateProfileName: "ICAQualifiedCAG4: AdvancedDocSigning",
+    endEntityProfileName: "ICAQualifiedCAG4: AdvancedDocSigning",
+    caName: "DM Demo Generic Issuing CA"//ICA PP Qualified CA G4"
+  }
+//first, issue a certificate
+//return issue("CN=Person's Name, C=AE, serialNumber=12345, givenName=Jackson, surname=Michael", "2018-02-15 05:00:00+00:00", "qualifiedSignatureCertificate")
+return revoke("C = AE, O = TestDemo, CN = DM Demo Generic Issuing CA", "2996339314898654189", 1)
+function issue(subjectDN, expiry, certificateType){
+  var CERT_HEADER = "-----BEGIN CERTIFICATE-----\n";
+	var CERT_FOOTER = "-----END CERTIFICATE-----";
+  log.info(subjectDN + " " + expiry);
+  var file = require("file");
+  var templateString = file.get("issueCertificateTemplate").result.content;
+  var hogan = require("modules/hogan/hogan.js").Hogan
+  var template = hogan.compile(templateString);
+  var xml = template.render({
+    subjectDN: subjectDN,
+    //use base64 of subjectDN as we don't want them to all have the same user name (some indexing issue when there is a high cardinality of the value)
+    username: apsdb.btoa(subjectDN),
+    endTime: expiry,
+    certificateProfileName: caConf[certificateType]["certificateProfileName"],
+    endEntityProfileName: caConf[certificateType]["endEntityProfileName"],
+    caName: caConf[certificateType]["caName"]
+  });
+
+ 	var key = constants.caConf[certificateType]["key"];
+	var cert = constants.caConf[certificateType]["cert"];
+	var ca = constants.caConf[certificateType]["ca"];
+  
+  var certResponseXML = dm.curl("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml, ca, cert, key);
+	var certResponse = xmlToJson(certResponseXML);
+	var b64Cert = certResponse["soap:Body"]["ns2:certificateRequestResponse"]["return"]["data"]
+	var certNoEnv = apsdb.atob(b64Cert);
+	return CERT_HEADER + certNoEnv + CERT_FOOTER;
+}
+
+function revoke(issuerDN, certificateSN, reason){
+  var file = require("file");
+  var templateString = file.get("revokeCertificateTemplate").result.content;
+  var hogan = require("modules/hogan/hogan.js").Hogan
+  var template = hogan.compile(templateString);
+  var xml = template.render({
+    issuerDN: issuerDN,
+    certificateSN: certificateSN,
+    reason: reason
+  });
+  
+  //in case certificateType = authentication
+  var key = "dmcag3.key";
+  var cert = "dmcag3.pem";
+  var ca = null;
+  
+  //other cases 
+	var key = "dmcag4.key";
+  var cert = "dmcag4.pem";
+  var ca = null;
+  
+  var certResponseXML = dm.curl("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml, ca, cert, key)
+  return certResponseXML;
+}

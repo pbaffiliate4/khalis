@@ -1,0 +1,18 @@
+return md5("hello")
+
+
+var document = require("document");
+var results = document.query({"query":'subjectName = "Qz1VUyxTVD1JbGxpbm9pcyxMPUNoaWNhZ28sTz1Db2RhbCxPVT1OQSxDTj1Db2RhbCxFPWtiYXhpQGNvZGFsLmNvbQ=="', "fields":'*'});
+      
+return JSON.stringify(results);
+if(results == null || results.documents == null || results.documents.length == 0){
+	return "here";
+}else{
+  for(var i=0; i< results.documents.length;i++){
+		var doc = results.documents[i];
+    if(doc["biometricValue"] && doc["cardResponse"])
+      return true;
+  }
+  
+  return false;
+}

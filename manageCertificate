@@ -1,0 +1,81 @@
+var constants = require("constants");
+var utils = require("utils");
+function issue(subjectDN, expiry, certificateType, email, xmlCert){
+  try{
+    var CERT_HEADER = "-----BEGIN CERTIFICATE-----\n";
+    var CERT_FOOTER = "\n-----END CERTIFICATE-----";
+    log.info("subjectDN="+ subjectDN + "=expiry=" + expiry + "=certificateType=" + certificateType);
+
+    var file = require("file");
+    var templateString = file.get("issueCertificateTemplate").result.content;
+    var hogan = require("modules/hogan/hogan.js").Hogan
+    var template = hogan.compile(templateString);
+     var key = constants.caConf[certificateType]["key"];
+  	var cert = constants.caConf[certificateType]["cert"];
+  	var ca = constants.caConf[certificateType]["ca"];
+  	
+    var xml = template.render({
+      subjectDN: subjectDN,
+      //use base64 of subjectDN as we don't want them to all have the same user name (some indexing issue when there is a high cardinality of the value)
+      username: apsdb.btoa(subjectDN),
+      endTime: expiry,
+      email: email,
+      xmlCert: xmlCert,
+      certificateProfileName: constants.caConf[certificateType]["certificateProfileName"],
+      endEntityProfileName: constants.caConf[certificateType]["endEntityProfileName"],
+      caName:  constants.caConf[certificateType]["caName"]
+    });
+    
+    log.info("Issue certificate xml request="+xml);
+
+    var certResponseXML = dm.curl(constants.EJBCA_URL, xml, ca, cert, key);
+    //var certResponseXML = dm.issueCertificate("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml);
+    log.info("Issue certificate xml response="+certResponseXML);
+    
+    var certResponse = xmlToJson(certResponseXML);
+    //var b64Cert = certResponse["soap:Body"]["ns2:certificateRequestResponse"]["return"]["data"];
+      var b64Cert = null;
+      try{
+          b64Cert = certResponse["soap:Body"]["ns2:certificateRequestResponse"]["return"]["data"];
+      }
+      catch(e){
+        	var error = utils.getJsonValue(certResponse, ["soap:Body", "soap:Fault", "faultstring"]);
+        	if(error != null)
+            	throw error;
+          throw certResponse["soap:Body"];
+      }
+    var certNoEnv = apsdb.atob(b64Cert);
+
+    return CERT_HEADER + certNoEnv + CERT_FOOTER;
+  }catch(e){
+    log.error("Error while issuing a certificate" + e);
+ 	 	//return null;
+      throw e;
+  }
+}
+
+function getProfileFromCertiticateType(type){
+  
+}
+
+function revoke(issuerDN, certificateSN, reason, key, cert, ca){
+  log.info("issuerDN="+issuerDN+"=certificateSN="+certificateSN+"=reason="+reason);
+  
+  var file = require("file");
+  var templateString = file.get("revokeCertificateTemplate").result.content;
+  var hogan = require("modules/hogan/hogan.js").Hogan
+  var template = hogan.compile(templateString);
+  var xml = template.render({
+    issuerDN: issuerDN,
+    certificateSN: certificateSN,
+    reason: reason
+  });
+  
+  log.info("Revoke issue xml request="+xml);
+  
+  var certResponseXML = dm.curl(constants.EJBCA_URL, xml, ca, cert, key);
+	//var certResponseXML = dm.issueCertificate("https://ejbca-ca.localdomain:8443/ejbca/ejbcaws/ejbcaws", xml);
+  log.info("Revoke issue xml response="+certResponseXML);
+  
+  return certResponseXML;
+}

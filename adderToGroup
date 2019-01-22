@@ -1,0 +1,7 @@
+var id = "group2";
+var mobilePush = require('mobile-push');
+
+pushTokens = ["d0_MMW5-TqA:APA91bFLwFEpd1IFeFRIwZ0eGkG52A1Vn-tUJN6-9pSwW5fziAmLoHHE7Ey8Ml6mZ8tIhGYRnqpoqrIvJo3_NRf1VR7lGdY1R49NNDA9GV5SWFQxILzJByT0PCIoJW4G8NIEOAuPkeEi", "dPYPEJZ7p6M:APA91bHk8i8AVRzFr492aeYD00wZ_Y4KvMab6rSanz2jt_tsxmQHd6Wbj7-nEa43Ok7DHaCwPSA76aZypEqkjTZfTfuriIcwiP-tyqnPBOHUtUxFyF2ryDVirfK7Nc0i9sz1rPheJw1i"];
+
+
+return mobilePush.addToGroup('myGroup',pushTokens);

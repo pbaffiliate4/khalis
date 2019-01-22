@@ -1,0 +1,287 @@
+var utils 		= require("utils");
+var constants = require("constants");
+var document  = require("document");
+var manageCertificate = require("manageCertificate");
+var log 			= require("log");
+log.setLevel("info");
+
+try{
+  // verify request method is POST
+  if(request.method == "POST"){
+    var biometricAndCardExists = false;
+    var biometricAndCardValid = false;
+    var valueFromDb = false;
+    var refCert = "";
+    
+   	var params = request.body || JSON.parse(request.parameters.body);
+		log.info("rawBody----" + JSON.stringify(request.rawBody));
+    log.info("body----" + JSON.stringify(request.body));
+    log.info("paramteres----" + JSON.stringify(request.parameters));
+    if(params == null){
+      try{
+        params = JSON.parse(request.rawBody)
+      }catch(e){
+        log.info("failed to parse body");
+        params == null;
+      }
+      if(params == null){
+        utils.returnInvalidRequest("Invalid parameter format, couldn't parse JSON body", 4001);
+   		 return;
+      }
+    }
+    
+    // mandatory params
+   	//var pcsr = apsdb.atob(params.csr);
+    var pcsr = params.csr;
+    var pct = params.certificateType;
+   	var pe = params.expiry;
+    var pemail = params.email;
+
+     if (!utils.valid(pcsr)) {
+      utils.returnInvalidRequest("csr is a required parameter", 4002);
+   		return;
+    }
+    //parse csr, this is now coming in a base64 format to avoid new lines issues
+  	var csr = null;
+    try{
+	    csr = apsdb.atob(pcsr);  
+        log.info("decoded csr" + csr)
+    }catch(e){
+      utils.returnInvalidRequest("csr is not a valid base64", 4030);
+   		return;
+    }
+    if (!utils.valid(csr)) {
+      utils.returnInvalidRequest("csr is not a valid base64", 4030);
+   		return;
+    }
+     if (!utils.valid(pct)) {
+      utils.returnInvalidRequest("certificateType is a required parameter", 4003);
+   		return;
+    }
+
+    if (!utils.valid(pemail)) {
+      utils.returnInvalidRequest("email is a required parameter", 4004);
+   		return;
+    }
+    
+    if(!utils.validateEmail(pemail)){
+      utils.returnInvalidRequest("provided email is not valid", 4005);
+   		return;
+    }
+    
+    //validate certificate type
+    if(utils.getAllowedCertificateType().indexOf(pct) < 0){
+      utils.returnInvalidRequest("Certificate type [" + pct + "] not allowed", 4006);
+   		return;
+    }
+
+    var csrInfo = dm.extractInfoFromCSR(csr);
+      log.info(JSON.stringify(csrInfo))
+      if(csrInfo == null){
+          utils.returnInvalidRequest("csr is not valid, error while extracting subject info", 4031);
+          return;
+      }
+    var subjectNameFromCsr = csrInfo.subject;
+    var xmlCert = csrInfo.publicKey;
+    var csrValues = utils.tokenizeCN(subjectNameFromCsr);
+    subjectNameFromCsr = utils.buildSubjectDN(csrValues);
+    
+    var pbar = params.biometricAuthenticationResponse;
+    var pccr = params.checkCardResponse;
+		if((utils.valid(pbar) && !utils.valid(pccr)) || (!utils.valid(pbar) && utils.valid(pccr))){
+      	utils.returnInvalidRequest("Biometric and card check status not both present", 4033);
+   			return;
+    }
+    
+   	if(utils.valid(pbar) && utils.valid(pccr)){
+      biometricAndCardExists = true;
+      var biometricObject = utils.parseBiometricService(pbar);
+      var checkCardObject = utils.parseCheckCardService(pccr);
+		
+      
+      if(/*utils.compareValues(biometricObject.cardSerialNumber, checkCardObject.cardSerialNumber) 
+        && utils.compareValues(biometricObject.cardNumber, checkCardObject.cardNumber) 
+        && */utils.compareValues(biometricObject.idNumber, checkCardObject.idNumber)){
+        //check emirates id 
+        var emiratesId = csrValues["SERIALNUMBER"];
+        
+        if(emiratesId == biometricObject.idNumber){
+          biometricAndCardValid = true;
+        }else{
+        	utils.returnInvalidRequest("ID in Csr and vg responses do not match", 4007);
+   			 	return;
+        }
+      }
+    }
+    
+    //if biometric and check card values exists and not valid don't continue
+    if(biometricAndCardExists && !biometricAndCardValid){
+       utils.returnInvalidRequest("Biometric and card IDs don't match", 4008);
+   		 return;
+    }
+    
+    if(pct == constants.QUALIFIED_SIGNATURE_CERTIFICATE && !biometricAndCardExists){
+        utils.returnInvalidRequest("Vg responses required for Qualified signature certificate", 4009);
+   		 	return;
+    }
+		//not present and not in db and verified
+		//if certificateType = qualifiedSignatureCertificate and (biometric and checkCard) does not exists check if id number exists in the db
+    //this logic is disabled for the moment, will be used for advanced and authentication in a later stage.
+    /*
+  	if(pct == constants.QUALIFIED_SIGNATURE_CERTIFICATE && !biometricAndCardExists){
+      var vgResponseFromDb = utils.validDBResults(md5(subjectNameFromCsr));
+      if(!vgResponseFromDb){
+        utils.returnInvalidRequest("Vg responses required for Qualified signature certificate", 4009);
+   		 	return;
+      }else{
+        pbar = vgResponseFromDb["biometricValue"];
+        pccr = vgResponseFromDb["cardResponse"];
+        refCert = vgResponseFromDb["certSerialNumber"];
+        valueFromDb = true;
+      }
+		}*/
+    
+		//we got here, all validations passed
+   	//Issue certificate
+ 		//var cert = manageCertificate.issue(subjectNameFromCsr, pe, pct, pemail, xmlCert);
+    try{
+        var cert = manageCertificate.issue(subjectNameFromCsr, pe, pct, pemail, xmlCert);
+    }
+      catch(e){
+          utils.returnInvalidRequest("Error while creating certificate [" + JSON.stringify(e) + "]", 4032 );
+          return;
+      }
+      if(cert != null){
+      //get certificate serial number
+      var certSerialNumber = dm.extractSerialNumberFromCertificate(cert);
+
+      //create document
+      var documentObject = {};
+      documentObject.certSerialNumber = certSerialNumber;
+      documentObject.certificateType = pct;
+      documentObject.cardSerialNumber = (biometricObject == null) ? "" : biometricObject.cardSerialNumber;
+      documentObject.cardNumber = (biometricObject == null) ? "" : biometricObject.cardNumber;
+      documentObject.idNumber = (biometricObject == null) ? "" : biometricObject.idNumber;
+      documentObject.subjectNameKey = md5(subjectNameFromCsr);
+      documentObject.subjectName = subjectNameFromCsr;
+      documentObject.biometricValue = pbar == null ? "" : pbar;
+      documentObject.cardResponse = pccr == null ? "" : pccr;
+      documentObject.valueFromDb = valueFromDb;
+      documentObject.refCertSerialNumber = refCert;
+      documentObject["meta.types"] = {
+        "certSerialNumber": "string",
+        "certificateType": "string",
+        "cardSerialNumber": "string",
+        "cardNumber": "string",
+        "idNumber": "string",
+        "subjectNameKey": "string",
+        "subjectName": "string",
+        "biometricValue": "text",
+        "cardResponse": "text",
+        "valueFromDb": "string",
+        "refCertSerialNumber": "string"
+      }
+
+      var certDoc = document.create(documentObject);
+
+      if(utils.validDocument(certDoc)){
+        var result = {
+          "status": "success",
+          "certificate": cert
+        }
+
+        utils.returnResult(result);
+        return;
+    	}else{
+      	utils.returnInvalidRequest("Error While creating document");
+      	return;
+    	}
+    }else{
+    	utils.returnInvalidRequest("Error while creating certificate");
+   		return;
+    }
+  } else if(request.method == "DELETE"){
+    	var params = request.body || JSON.parse(request.parameters.body);
+		log.info("rawBody----" + JSON.stringify(request.rawBody));
+    log.info("body----" + JSON.stringify(request.body));
+    log.info("paramteres----" + JSON.stringify(request.parameters));
+    if(params == null){
+      try{
+        params = JSON.parse(request.rawBody)
+      }catch(e){
+        log.info("failed to parse body");
+        params == null;
+      }
+      if(params == null){
+        utils.returnInvalidRequest("Invalid parameter format, couldn't parse JSON body", 4001);
+   		 return;
+      }
+    }
+    // mandatory params
+    var pc = params.certificateSN;
+    var picn = params.issuerCN;
+    var perr = params.entityRequestingRevocation;  
+    var pr = params.reason;
+
+    if (!utils.valid(pc)) {
+      utils.returnInvalidRequest("certificateSN is a required parameter", 4013);
+      return;
+    }
+     if (!utils.valid(picn)) {
+      utils.returnInvalidRequest("issuerCN is a required parameter", 4012);
+      return;
+    }
+     if (!utils.valid(perr)) {
+      utils.returnInvalidRequest("entityRequestingRevocation is a required parameter", 4011);
+      return;
+    }
+     if (!utils.valid(pr)) {
+      utils.returnInvalidRequest("reason is a required parameter", 4010);
+      return;
+    }
+    
+    //validate issuerSN
+    if(!utils.validIssuerSN(picn)){
+      utils.returnInvalidRequest("Invalid issuerDN", 4014);
+      return;
+    }
+
+    var pm = params.miscellaneous;
+    var pccr = params.checkCardResponse;
+    var pbar = params.biometricAuthenticationResponse;
+    var validRequest =  utils.validReason(pr);
+    
+    if(validRequest){
+      var reasonIndex = constants.reasonsConf[pr].index;
+      // revoke certificate
+			var key = utils.getKeyfromIssuerSN(picn);
+      var cert = utils.getCertfromIssuerSN(picn);
+      var ca = utils.getCafromIssuerSN(picn);
+ 			var xml = manageCertificate.revoke(picn, pc, reasonIndex, key, cert, ca);
+      var revokeObject = utils.validateRevokeXML(xml);
+      
+      if(revokeObject.status == "success"){
+         var result = {
+          "status":"success",
+          "details": revokeObject.msg
+        }
+
+        utils.returnResult(result);  
+        return;
+      }else{
+      	utils.returnInvalidRequest(revokeObject.msg);  
+     		return;
+      }
+    }else{
+      utils.returnInvalidRequest("Invalid Reason Parameter", 4017);
+      return;
+    }
+
+  }else{
+    utils.returnInvalidRequest("Http method not allowed", 4015);
+    return;
+	}
+}catch(e){
+  utils.returnInvalidRequest("Unknown Exception" + e), 4016;
+  return;
+}

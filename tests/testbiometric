@@ -1,0 +1,204 @@
+var biometricAuthenticationResponse = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+PFZh\n\
+bGlkYXRpb25HYXRld2F5UmVzcG9uc2UgeG1sbnM9Imh0dHA6Ly93d3cuZW1pcmF0ZXNpZC5hZS92\n\
+ZyI+PE1lc3NhZ2UgeG1sOmlkPSJtZXNzYWdlIj48SGVhZGVyPjxTZXJ2aWNlPkF1dGhlbnRpY2F0\n\
+ZUJpb21ldHJpY09uU2VydmVyPC9TZXJ2aWNlPjxBY3Rpb24+TWF0Y2hPblNlcnZlcjwvQWN0aW9u\n\
+PjxSZXF1ZXN0SUQ+ZDBiZ1FsV29rZThLbHRWMjRTMmRKajcrTldnS3NBaW5FWnVPWUlFRXRJdG1O\n\
+ZlNjZ1BHVHVBPT08L1JlcXVlc3RJRD48Tm9uY2U+UzdadHQ4ZGFHK3c0MXdwNHNPZ1JOUWRwOFZx\n\
+YkRRd3E2eVNDNXJBd1hsc3ZnV245UzBXQnN3PT08L05vbmNlPjxDb3JyZWxhdGlvbklEPmE2MTMz\n\
+N2JlLTYxN2QtNDUyYi05NmRhLWFlNGY0MDRmNjkyNTwvQ29ycmVsYXRpb25JRD48Q2FyZFNlcmlh\n\
+bE51bWJlcj4xNSA4MCAwMCAwMCAwRSA0QiAwNiA3NTwvQ2FyZFNlcmlhbE51bWJlcj48Q2FyZE51\n\
+bWJlcj4wMDAwMTk3NDY8L0NhcmROdW1iZXI+PElETnVtYmVyPjc4NDE5ODg0MjEwNTQ4MjwvSURO\n\
+dW1iZXI+PFRpbWVzdGFtcD4yMDE4LTEyLTA0VDEwOjI2OjE5LjM3MSswNDowMDwvVGltZXN0YW1w\n\
+PjxWYWxpZGl0eUludGVydmFsPjE4MDwvVmFsaWRpdHlJbnRlcnZhbD48L0hlYWRlcj48Qm9keSB4\n\
+bWxuczp4c2k9Imh0dHA6Ly93d3cudzMub3JnLzIwMDEvWE1MU2NoZW1hLWluc3RhbmNlIiB4c2k6\n\
+dHlwZT0iTWF0Y2hPblNlcnZlckRhdGFUeXBlIj48UmVzcG9uc2VTdGF0dXM+U3VjY2VzczwvUmVz\n\
+cG9uc2VTdGF0dXM+PE1hdGNoU3RhdHVzPkxvd1Njb3JlTWF0Y2g8L01hdGNoU3RhdHVzPjwvQm9k\n\
+eT48L01lc3NhZ2U+PFNpZ25hdHVyZSB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC8wOS94\n\
+bWxkc2lnIyI+PFNpZ25lZEluZm8+PENhbm9uaWNhbGl6YXRpb25NZXRob2QgQWxnb3JpdGhtPSJo\n\
+dHRwOi8vd3d3LnczLm9yZy9UUi8yMDAxL1JFQy14bWwtYzE0bi0yMDAxMDMxNSNXaXRoQ29tbWVu\n\
+dHMiLz48U2lnbmF0dXJlTWV0aG9kIEFsZ29yaXRobT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS8w\n\
+NC94bWxkc2lnLW1vcmUjcnNhLXNoYTI1NiIvPjxSZWZlcmVuY2UgVVJJPSIjbWVzc2FnZSI+PFRy\n\
+YW5zZm9ybXM+PFRyYW5zZm9ybSBBbGdvcml0aG09Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvMDkv\n\
+eG1sZHNpZyNlbnZlbG9wZWQtc2lnbmF0dXJlIi8+PC9UcmFuc2Zvcm1zPjxEaWdlc3RNZXRob2Qg\n\
+QWxnb3JpdGhtPSJodHRwOi8vd3d3LnczLm9yZy8yMDAxLzA0L3htbGVuYyNzaGEyNTYiLz48RGln\n\
+ZXN0VmFsdWU+SEJHZzVYdVZGZjVDbjBNR1IrZ1VxdDBDVVI2aXljMkJUbkpRcFdqdExQRT08L0Rp\n\
+Z2VzdFZhbHVlPjwvUmVmZXJlbmNlPjwvU2lnbmVkSW5mbz48U2lnbmF0dXJlVmFsdWU+bDc5T2Fo\n\
+RFV6MjR2bXJkOURwWXYwZ2ZpQW5ZQzRDNHNQVXBwcVEwQ1BwQjltUjdDeE1wcGFRZTF4WGo2aXFE\n\
+OWVRZmwxWExBeEJnWA0KSllwMUsySS95NTcrLzZ1c1VHV1ovZGQwQUxZZE5mRzNPS3N5N0tVaXNn\n\
+N25ra09aeHFCTjJtN0F3eU5KYkxjSDJwVHN2Wi96eHhyYw0KcmZzN0JCUTRMMHV6TmlMaUVVQkht\n\
+Q2VSTnZLTHVSeFltQ1hBbjV2Wk50azVuKzNySm1GalJWcTBMK2w4MU8xemZFam5kZGQ1R1dFZA0K\n\
+L3NjRnVXQlR2dHc1MzFxenZnSlpObEJ0cS9XZFliZk85YnRXYmpzU1U0QlMvZ3lLUjdtSWN5SlVn\n\
+NWJWcndpOXVKZEg2OXgzcWE5Uw0KV3RJcW8rRVppeVdJaTdicCtFNVA0QkpiT0NsQXJvZHU2cENt\n\
+RHc9PTwvU2lnbmF0dXJlVmFsdWU+PEtleUluZm8+PFg1MDlEYXRhPjxYNTA5Q2VydGlmaWNhdGU+\n\
+TUlJREtqQ0NBcE9nQXdJQkFnSVFDL1kxK3NNdFhEUHNQMVFXcHlMTnpEQU5CZ2txaGtpRzl3MEJB\n\
+UXNGQURCbU1Sd3dHZ1lEVlFRRA0KREJORmJXbHlZWFJsY3lCSlJDQlRaWEoyWlhKek1RNHdEQVlE\n\
+VlFRTERBVlFVa2xFUXpFZE1Cc0dBMVVFQ2d3VVRXbHVhWE4wY25rZw0KYjJZZ1NXNTBaWEpwYjNJ\n\
+eEN6QUpCZ05WQkFZVEFrRkZNUW93Q0FZRFZRUUVEQUUxTUI0WERURTNNRFF5TXpFeE5EUTFNbG9Y\n\
+RFRJdw0KTURReU16RXhORFExTWxvd2FERWpNQ0VHQTFVRUF3d2FWbUZzYVdSaGRHbHZiaUJIWVhS\n\
+bGQyRjVJRk5sY25acFkyVXhEakFNQmdOVg0KQkFzTUJWQlNTVVJETVNRd0lnWURWUVFLREJ0RmJX\n\
+bHlZWFJsY3lCSlpHVnVkR2wwZVNCQmRYUm9iM0pwZEhreEN6QUpCZ05WQkFZVA0KQWtGRk1JSUJJ\n\
+akFOQmdrcWhraUc5dzBCQVFFRkFBT0NBUThBTUlJQkNnS0NBUUVBeDBzN2xjNHEydjlYNVFmbDgy\n\
+ODBNZlZzT01LLw0KNTRpbFFHRjFoczlVM2VUSDZuaVNDNlphbkNaUllKdHFpVWVUV3k0ZHVlemhY\n\
+WWNQK2RrZmhOWHh3SHRqaGplK040L2dkdVZKTmxsUw0KMEhVczhzdjZyZnE4UmdWeGlWVnB4WWZX\n\
+L25wQ2VaUGJyRDBHKzZaVVFsWUxBdXRMd1RGOVN2UFo3QWVXamwxNnNzMlZ4cmVRUWVLSA0KNFRS\n\
+ZjRFV1FJNUZ1Vm1xbEZpejVTQlFrRFdZcWxWVDJTYmZqam92LzlIYzN6dk9xVnNod0tSSGJLUW5E\n\
+d1o3V29aQzEzNEZtYkJEcg0KNngzUmNUMzUrYS8ySmZkZmJZY2Y3aVBzRXl1NHZ4ME02OGJTd3BX\n\
+WTI0ZWhxWS9wUlNVclU4a0ZIQUljdUhGUlliSnpwbEZFcHhWdA0KdW9RR3BzRlprd0lEQVFBQm8x\n\
+TXdVVEFMQmdOVkhROEVCQU1DQnNBd0hnWURWUjBPQVFIL0JCUUVFblJsYlhCdmNtRnllVkIxWW14\n\
+cA0KWTB0bGVUQWlCZ05WSFNNQkFmOEVHREFXZ0JSOHZrLy82citESkowazBUMk1JYUh5bnNiMGd6\n\
+QU5CZ2txaGtpRzl3MEJBUXNGQUFPQg0KZ1FDV0F6NFJZZFJsdndtMHlrRDBlOUZRWFdiMTRCdWxO\n\
+WFh4SzFQU1VjNVlJalZBRkJRYjRxeHNFVllJU1owVGFZdWJvUXhYRjBSRA0KS0VNamZrWXorQm4y\n\
+QXo5dGRXeUtPeVo5RjJTbkVUOW8rZWxHQ0J1Tm0rWS9VNmhlRk9ldFN1bkZkR1FCNFRKNW0zNVNH\n\
+UFBDNEg1RA0KekZIUmFSQmlzMzhIYmJDcVhhV0JZdz09PC9YNTA5Q2VydGlmaWNhdGU+PC9YNTA5\n\
+RGF0YT48L0tleUluZm8+PC9TaWduYXR1cmU+PC9WYWxpZGF0aW9uR2F0ZXdheVJlc3BvbnNlPg==";
+
+var xml = apsdb.atob(biometricAuthenticationResponse);
+var json = xmlToJson(xml);
+
+if(json == null){
+  returnInvalidRequest("Invalid Parameter");
+}
+
+var cardSerialNumber = getCardSerialNumber(json);
+var cardNumber = getCardNumber(json);
+var idNumber = getIdNumber(json);
+var timeStamp = getTimestamp(json);
+var validityInterval = getValidityInterval(json);
+var service = getService(json);
+var matchStatus = getMatchStatus(json);
+var digestValue = getDigestValue(json);
+var signatureValue = getSignatureValue(json);
+var x509Certificate = getX509Certificate(json);
+
+if(cardSerialNumber && cardNumber && idNumber && timeStamp && validityInterval && service && matchStatus && digestValue && signatureValue && x509Certificate){
+	if(validDate(timeStamp, validityInterval)){
+    if(validMatchStatus(service, matchStatus)){
+      //validate DigestValue
+			//validate SignatureValue
+    }else{
+       returnInvalidRequest("Invalid Match Status");
+    }
+  }else{
+     returnInvalidRequest("Invalid date");
+  }
+}else{
+  returnInvalidRequest("Invalid Parameter");
+}
+
+function getCardSerialNumber(json){
+  if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["CardSerialNumber"])
+  	return json["Message"]["Header"]["CardSerialNumber"];
+  else{
+    return null;
+  }
+}
+
+function getCardNumber(json){
+  if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["CardNumber"])
+  	return json["Message"]["Header"]["CardNumber"];
+  else{
+    return null;
+  }
+}
+
+function getIdNumber(json){
+  if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["IDNumber"])
+  	return json["Message"]["Header"]["IDNumber"];
+  else{
+    return null;
+  }
+}
+
+function getTimestamp(json){
+	if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["Timestamp"])
+  	return json["Message"]["Header"]["Timestamp"];
+  else{
+    return null;
+  }
+}
+
+function getValidityInterval(json){
+  if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["ValidityInterval"])
+  	return json["Message"]["Header"]["ValidityInterval"];
+  else{
+    return null;
+  }
+}
+
+function getService(json){
+  if(json["Message"] && json["Message"]["Header"] && json["Message"]["Header"]["Service"])
+  	return json["Message"]["Header"]["Service"];
+  else{
+    return null;
+  }
+}
+
+function getMatchStatus(json){
+	if(json["Message"] && json["Message"]["Body"] && json["Message"]["Body"]["MatchStatus"])
+  	return json["Message"]["Body"]["MatchStatus"];
+  else{
+    return null;
+  }
+}
+
+function getDigestValue(json){
+  if(json["Signature"] && json["Signature"]["SignedInfo"] && json["Signature"]["SignedInfo"]["Reference"] && json["Signature"]["SignedInfo"]["Reference"]["DigestValue"])
+  	return json["Signature"]["SignedInfo"]["Reference"]["DigestValue"];
+  else{
+    return null;
+  }
+}
+
+function getSignatureValue(json){
+  if(json["Signature"] && json["Signature"]["SignatureValue"])
+  	return json["Signature"]["SignatureValue"];
+  else{
+    return null;
+  }
+}
+
+function getX509Certificate(json){
+  if(json["Signature"] && json["Signature"]["KeyInfo"] && json["Signature"]["KeyInfo"]["X509Data"] && json["Signature"]["KeyInfo"]["X509Data"]["X509Certificate"])
+  	return json["Signature"]["KeyInfo"]["X509Data"]["X509Certificate"];
+  else{
+    return null;
+  }
+}
+
+function validDate(timeStamp, validityInterval){
+  var oldDate = new Date(timeStamp);
+  var currentDate = new Date();
+  
+	return compareDate(oldDate, currentDate) <= validityInterval;
+}
+
+function validMatchStatus(service, matchStatus){
+  return service == "AuthenticateBiometricOnServer" && matchStatus == "BiometricAuthenticated";
+}
+
+function compareDate(date1, date2) {
+  //Get 1 day in milliseconds
+  var one_day=1000*60*60*24;
+
+  // Convert both dates to milliseconds
+  var date1_ms = date1.getTime();
+  var date2_ms = date2.getTime();
+
+  // Calculate the difference in milliseconds
+  var difference_ms = date2_ms - date1_ms;
+    
+  // Convert back to days and return
+  return Math.round(difference_ms/one_day); 
+}
+
+function returnInvalidRequest(msg){ 
+  response.setStatus(400);
+  var responseMetadata = {
+        "status": "failure",
+       	"errorDetails": msg
+  }
+  response.write(JSON.stringify(responseMetadata));
+  response.addHeaders(configuration.crossDomainHeaders);
+  response.close();
+  return;
+}
