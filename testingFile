@@ -1,2 +1,0 @@
-var x = request.parameters.x;
-return x;

@@ -1,6 +1,0 @@
-var msg = "";
-
-       
-	msg = '{"Content":"testing android push to valid and invalid tokens"}';
-	
-return pushToGroup('myGroup', msg , "android");

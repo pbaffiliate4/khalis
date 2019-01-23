@@ -1,6 +1,0 @@
-var msg = "";
-var pusher = require('mobile-push');
-       
-msg = '{"Content":"testing android push to valid and invalid tokens"}';
-	
-return pushToGroup('myGroup', msg , "android");
