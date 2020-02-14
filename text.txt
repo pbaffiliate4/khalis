@@ -1,0 +1,11 @@
+
+	private static String subDomainA = "test1";
+	private static String subDomainH = "deleteByOwner";
+	private static String deviceA = "platStation";
+	private static String authKey = "";
+	private static String authSecret = "";
+	private static String script4 = "subdomainScriptingApiTest1";
+	private static String script5 = "subdomainScriptingApiTest3";
+	private static String script6 = "subdomainScriptingApiTest4";
+	private static String script7 = "subdomainScriptingApiTest6";
+	private static String ressFolder = "subdomain/";
