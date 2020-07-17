@@ -1,0 +1,6 @@
+var originalValue = "whatever";
+var enco = require("base64").Base64;
+
+var encodedValue = enco.encode(originalValue);
+
+return originalValue == enco.decode(encodedValue)
