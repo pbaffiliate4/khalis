@@ -1,0 +1,7 @@
+
+//return apsdb.callApi("SaveConfiguration", {"apsdb.defaultNotificationStore":"DefaultStore"},null)
+
+var message = '{"Content":"un deux trois no icon defaultsotre"}';  
+var arrayDevices = ["ddddd", "eiyYIeLY_W4:APA91bFYObLfDEnCmsIO3i-dCRpqXmyiIDohtD-zdplyCxlzAy-L1dYSjEJkVlJAX6HidRcz4TjXu97y4568TzT_iK8Yhl9iRrx4UyDFE_498SsG-PSxWyI_Cv_v5dI6TPvsBbA_6UOb"];
+var deviceType = "android";
+return push(arrayDevices, message, deviceType);   							
