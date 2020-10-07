@@ -1,0 +1,7 @@
+return [ 
+    ['Language', 'Speakers (in millions)'],
+    ['German',  5.85],
+    ['French',  2.66],
+    ['Italian', 0.416],
+    ['Romansh', 1.0791]
+];
